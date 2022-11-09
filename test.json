@@ -1,0 +1,88 @@
+[
+    {
+        "lastGames": null,
+        "nextGame": 5,
+        "teamnames": [
+            "Tampa Bay Lightning",
+            "Vancouver Canucks"
+        ],
+        "bracketNo": 1,
+        "roundNo": 1,
+        "bye": true
+    },
+    {
+        "lastGames": null,
+        "nextGame": 5,
+        "teamnames": [
+            "Winnipeg Jets",
+            "Phoenix Coyotes"
+        ],
+        "bracketNo": 2,
+        "roundNo": 1,
+        "bye": false
+    },
+    {
+        "lastGames": null,
+        "nextGame": 6,
+        "teamnames": [
+            "Toronto Maple Leafs",
+            "Ottawa Senators"
+        ],
+        "bracketNo": 3,
+        "roundNo": 1,
+        "bye": false
+    },
+    {
+        "lastGames": null,
+        "nextGame": 6,
+        "teamnames": [
+            "Nashville Predators",
+            "Quebec Nordiques"
+        ],
+        "bracketNo": 4,
+        "roundNo": 1,
+        "bye": false
+    },
+    {
+        "lastGames": [
+            1,
+            2
+        ],
+        "nextGame": 7,
+        "teamnames": [
+            "Vancouver Canucks",
+            "Phoenix Coyotes"
+        ],
+        "bracketNo": 5,
+        "roundNo": 2,
+        "bye": false
+    },
+    {
+        "lastGames": [
+            3,
+            4
+        ],
+        "nextGame": 7,
+        "teamnames": [
+            "Toronto Maple Leafs",
+            "Nashville Predators"
+        ],
+        "bracketNo": 6,
+        "roundNo": 2,
+        "bye": false
+    },
+    {
+        "lastGames": [
+            5,
+            6
+        ],
+        "nextGame": null,
+        "teamnames": [
+            "Phoenix Coyotes",
+            "Nashville Predators"
+        ],
+        "bracketNo": 7,
+        "roundNo": 3,
+        "bye": false
+    }
+]

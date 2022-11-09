@@ -1,67 +1,61 @@
+// dev only
+require("dotenv").config({path: ".env"});
+require("./database");
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
+const cors = require("cors");
+
+const tournamentController = require("./controllers/tournamentController");
+const teamController = require("./controllers/teamController");
+const matchController = require("./controllers/matchController");
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-
-const tournaments = [];
-const teams = [];
+app.use(cors({
+    origin: '*',
+    optionsSuccessStatus: 200
+}));
 
 /**
  * Créer un tournoi
  */
-app.post("/api/v1/tournaments", (req, res) => {
-    const { name } = req.body;
-
-    const t = {
-        id: "to_" + (Math.random() + 1).toString(36).substring(7),
-        name: name
-    }
-
-    tournaments.push(t);
-
-    console.log("Creating tournaments " + name + "...");
-
-    return res.status(201).json(t);
-});
-
-/**
- * Créer une équipe dans un tournoi
- */
-app.post("/api/v1/tournaments/:tournamentId/teams", (req, res) => {
-    const { tournamentId } = req.params;
-    const { name, players } = req.body;
-
-    const tournament = tournaments.find(t => t.id === tournamentId);
-
-    if (!tournament) return res.status(404).json({ message: "Not found" });
-
-    const t = {
-        id: "te_" + (Math.random() + 1).toString(36).substring(7),
-        tournamentId: tournament.id,
-        name: name,
-        players: players
-    }
-
-    teams.push(t);
-
-    console.log("Creating teams " + name + " in tournament " + tournament.name + "...");
-
-    return res.status(201).json(t);
-});
+app.post("/api/v1/tournaments", tournamentController.create);
 
 /**
  * Obtenir un tournoi
  */
-app.get("/api/v1/tournaments/:tournamentId", (req, res) => {
-    const { tournamentId } = req.params;
+ app.get("/api/v1/tournaments/:tournamentId", tournamentController.get);
 
-    const tournament = tournaments.find(t => t.id === tournamentId);
+/**
+ * Créer une équipe
+ */
+app.post("/api/v1/tournaments/:tournamentId/teams", teamController.create);
 
-    if (!tournament) return res.status(404).json({ message: "Not found" });
+/**
+ * Récuperer les équipes
+ */
+app.get("/api/v1/tournaments/:tournamentId/teams", teamController.getAll);
 
-    return res.status(200).json(tournament);
-});
+/**
+ * Créer un match
+ */
+app.post("/api/v1/tournaments/:tournamentId/matches", matchController.create);
+
+/**
+ * Récupérer les matches
+ */
+app.get("/api/v1/tournaments/:tournamentId/matches", matchController.getAll);
+
+ /**
+ * Générer l'abres de matches
+ */
+app.post("/api/v1/tournaments/:tournamentId/matches/generate-tree", matchController.generateTree);
+
+/**
+ * Supprimer les matches
+ */
+ app.delete("/api/v1/tournaments/:tournamentId/matches", matchController.deleteAll);
 
 app.listen(8080, () => console.log("Server started on port : 8080"));
