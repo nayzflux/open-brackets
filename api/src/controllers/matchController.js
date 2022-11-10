@@ -77,8 +77,8 @@ module.exports.generateTree = async (req, res) => {
     while (i1 < teams.length) {
         if (i1 + 4 <= teams.length) {
             console.log("4 players = 2 matches");
-            matches.push({ ref: refCount, team1: teams[i1].name, team2: teams[i1 + 1].name, round: 1, from: null, next: nextRefCount });
-            matches.push({ ref: refCount + 1, team1: teams[i1 + 2].name, team2: teams[i1 + 3].name, round: 1, from: null, next: nextRefCount });
+            matches.push({ ref: refCount, team1: teams[i1].name, team2: teams[i1 + 1].name, round: 1, next: nextRefCount });
+            matches.push({ ref: refCount + 1, team1: teams[i1 + 2].name, team2: teams[i1 + 3].name, round: 1, next: nextRefCount });
             nextRefCount++;
             refCount += 2;
             i1 += 4;
@@ -86,8 +86,8 @@ module.exports.generateTree = async (req, res) => {
             if (i1 + 3 <= teams.length) {
                 console.log("3 players = 1 matches & 1 next round match");
                 //2 equipes en match + 1 équipes qualifié
-                matches.push({ ref: refCount, team1: teams[i1].name, team2: teams[i1 + 1].name, round: 1, from: null, next: nextRefCount });
-                matches.push({ ref: (refCount + (closest / 2) - 1), team1: teams[i1 + 2].name, team2: null, round: 2, from: [refCount], next: nextRefCount + (closest / 2) });
+                matches.push({ ref: refCount, team1: teams[i1].name, team2: teams[i1 + 1].name, round: 1, next: nextRefCount });
+                matches.push({ ref: (refCount + (closest / 2) - 1), team1: teams[i1 + 2].name, team2: null, round: 2, next: nextRefCount + (closest / 2) });
                 nextRefCount++;
                 refCount += 1;
                 i1 += 3;
@@ -95,7 +95,7 @@ module.exports.generateTree = async (req, res) => {
                 if (i1 + 2 <= teams.length) {
                     console.log("2 players = 1 next round match");
                     //2 équipes qualifié
-                    matches.push({ ref: (refCount + (closest / 2) - 1), team1: teams[i1].name, team2: teams[i1 + 1].name, round: 2, from: null, next: nextRefCount + (closest / 2) });
+                    matches.push({ ref: (refCount + (closest / 2) - 1), team1: teams[i1].name, team2: teams[i1 + 1].name, round: 2, next: nextRefCount + (closest / 2) });
                     nextRefCount++;
                     refCount += 0;
                     i1 += 2;
@@ -114,12 +114,20 @@ module.exports.generateTree = async (req, res) => {
 
     matches.filter(m => m.round == 2).forEach(m => console.log("       " + m.team1 + " VS " + m.team2 + "\n"));
 
-    for (const match of matches) {
-        const { ref, next, round } = match;
+    var n = 0;
+    console.log(roundNumber);
+    while (n < roundNumber) {
+        console.log(matches.length);
+        
+        for (const match of matches) {
+            const { ref, next, round } = match;
+    
+            if (matches.find(m => m.ref == next)) break;
+    
+            matches.push({ ref: next, round: round + 1, team1: null, team2: null, next: (next + (closest / 2) - 1) });
+        }
 
-        if (matches.find(m => m.ref == next)) break;
-
-        matches.push({ ref: next, round: round + 1, team1: null, team2: null, from: [ref], next: (next + (closest / 2) - 1) });
+        n++;
     }
 
     return res.status(200).json(matches);
