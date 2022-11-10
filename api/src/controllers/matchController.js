@@ -74,9 +74,7 @@ module.exports.generateTree = async (req, res) => {
 
     // Créer les matchs initiaux
     var i1 = 0;
-    while (i1 <= closest) {
-        console.log(i1);
-
+    while (i1 < teams.length) {
         if (i1 + 4 <= teams.length) {
             console.log("4 players = 2 matches");
             matches.push({ ref: refCount, team1: teams[i1].name, team2: teams[i1 + 1].name, round: 1, from: null, next: nextRefCount });
@@ -85,7 +83,7 @@ module.exports.generateTree = async (req, res) => {
             refCount += 2;
             i1 += 4;
         } else {
-            if (i1 + 3 <= teams.length - 1) {
+            if (i1 + 3 <= teams.length) {
                 console.log("3 players = 1 matches & 1 next round match");
                 //2 equipes en match + 1 équipes qualifié
                 matches.push({ ref: refCount, team1: teams[i1].name, team2: teams[i1 + 1].name, round: 1, from: null, next: nextRefCount });
@@ -94,7 +92,7 @@ module.exports.generateTree = async (req, res) => {
                 refCount += 1;
                 i1 += 3;
             } else {
-                if (i1 + 2 <= teams.length - 1) {
+                if (i1 + 2 <= teams.length) {
                     console.log("2 players = 1 next round match");
                     //2 équipes qualifié
                     matches.push({ ref: (refCount + (closest / 2) - 1), team1: teams[i1].name, team2: teams[i1 + 1].name, round: 2, from: null, next: nextRefCount + (closest / 2) });
