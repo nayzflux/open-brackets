@@ -19,7 +19,7 @@ module.exports.create = async (req, res) => {
     // Vérifier si les équipes existes
     for (const teamId of teams) {
         if (!mongoose.Types.ObjectId.isValid(teamId)) return res.status(400).json({ message: "Merci de préciser un ID valide" });
-        const team = await TeamModel.findById(teamId);
+        const team = await TeamModel.findById(teamId.toString());
         if (!team) return res.status(404).json({ message: "L'équipe " + teamId + " n'existe pas" });
     }
 
