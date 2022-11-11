@@ -104,7 +104,7 @@ const main = async () => {
                 matchContainer.appendChild(team1Container);
                 matchContainer.appendChild(team2Container);
 
-                matchRef.innerText = match.current;
+                matchRef.innerText = match.current + " -> " + match.next;
     
                 if (match.teams.length == 2) {
                     team1Name.innerText = match.teams[0].name;
