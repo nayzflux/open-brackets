@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
-const TeamModel = require("../models/teamModel");
-const TournamentModel = require("../models/tournamentModel");
-const MatchModel = require("../models/matchModel");
+const TeamModel = require("./api/src/models/teamModel");
+const TournamentModel = require("./api/src/models/tournamentModel");
+const MatchModel = require("./api/src/models/matchModel");
 
 /**
  * Créer un match
@@ -150,3 +150,95 @@ module.exports.deleteAll = async (req, res) => {
     const matches = await MatchModel.deleteMany({ tournamentId: tournamentId });
     return res.status(200).json(matches);
 }
+
+//
+
+var i = 0;
+while (i < bracketSize) {
+    console.log(i/2);
+    if ((i+5) <= (teamsSize - 1)) {
+        console.log("2 équipes");
+        matches.push({ref: refCount, team1: teams[i].name, team2: teams[i+1].name, round: 1, next: (Math.floor(nextRefCount/2))});
+        refCount++;
+        nextRefCount++;
+        // matches.push({ref: refCount, team1: teams[i+2].name, team2: teams[i+3].name, round: 1, next: (Math.floor(nextRefCount/2))});
+        // refCount++;
+        // nextRefCount++;
+    } else {
+        if (i == (teamsSize - 1)) {
+            console.log("1 équipe");
+            matches.push({ref: refCount, team1: teams[i].name, team2: null, round: 1, next: (Math.floor(nextRefCount/2))});
+            refCount++;
+            nextRefCount++;
+        }
+    }
+    i+=2;
+}
+
+    /**
+     * Créer l'arbres du tournoi
+     * Par: NayZ
+     * Aide: https://gist.github.com/sterlingwes/4199115
+     */
+     const teams = await TeamModel.find({ tournament: tournamentId }).populate("tournament");
+     const teamsSize = teams.length;
+ 
+     const matches = [];
+ 
+     const knownBrackets = [2, 4, 8, 16, 32, 64];
+ 
+     const bracketSize = knownBrackets.find(b => b >= teamsSize);
+ 
+     var refCount = 1;
+     var nextRefCount = bracketSize + 2;
+ 
+     console.log("\n\n");
+ 
+     // fonctionne pour de 0 à 8 équipes
+     var i = 0;
+     while (i < bracketSize) {
+         console.log(i / 2);
+         // SI il y a 4 équipes alors créer 2 match qui se rassemble
+         if (i + 4 <= (teamsSize - 1)) {
+             console.log("4 équipes = 2 matches plein");
+             MatchModel.create({})
+             matches.push({ ref: refCount, team1: teams[i].name, team2: teams[i + 1].name, round: 1, next: (Math.floor(nextRefCount / 2)) });
+             refCount++;
+             nextRefCount++;
+             matches.push({ ref: refCount, team1: teams[i + 2].name, team2: teams[i + 3].name, round: 1, next: (Math.floor(nextRefCount / 2)) });
+             refCount++;
+             nextRefCount++;
+             i += 4;
+         } else {
+             if ((i + 1) <= (teamsSize - 1)) {
+                 // à enlever si sa marche pas
+                 if ((i + 1) != (teamsSize - 1)) {
+                     console.log("2 équipes = 2 matches à moitié plein");
+                     matches.push({ ref: refCount, team1: teams[i].name, team2: null, round: 1, next: (Math.floor(nextRefCount / 2)) });
+                     refCount++;
+                     nextRefCount++;
+                     matches.push({ ref: refCount, team1: teams[i + 1].name, team2: null, round: 1, next: (Math.floor(nextRefCount / 2)) });
+                     refCount++;
+                     nextRefCount++;
+                     i += 2;
+                 } else {
+                     console.log("2 équipes = 1 matches plein");
+                     matches.push({ ref: refCount, team1: teams[i].name, team2: teams[i+1].name, round: 1, next: (Math.floor(nextRefCount / 2)) });
+                     refCount++;
+                     nextRefCount++;
+                     i += 2;
+                 }
+             } else {
+                 // Si c'est le 1 dernier
+                 if (i == (teamsSize - 1)) {
+                     console.log("1 équipe = 1 matche à moitié plein");
+                     matches.push({ ref: refCount, team1: teams[i].name, team2: null, round: 1, next: (Math.floor(nextRefCount / 2)) });
+                     refCount++;
+                     nextRefCount++;
+                     i += 2;
+                 } else {
+                     i += 2;
+                 }
+             }
+         }
+     }

@@ -38,7 +38,7 @@ module.exports.getAll = async (req, res) => {
     const tournament = await TournamentModel.findById(tournamentId);
     if (!tournament) return res.status(404).json({ message: "Le tournoi n'existe pas" });
 
-    const matches = await MatchModel.find({ tournament: tournament.id }).populate("teams tournament");
+    const matches = await MatchModel.find({ tournament: { $eq: tournamentId } }).populate("teams tournament");
     return res.status(200).json(matches);
 }
 
@@ -53,83 +53,51 @@ module.exports.generateTree = async (req, res) => {
     const tournament = await TournamentModel.findById(tournamentId);
     if (!tournament) return res.status(404).json({ message: "Le tournoi n'existe pas" });
 
+    // Delete all matches
+    await MatchModel.deleteMany();
+
     /**
      * Créer l'arbres du tournoi
      * Par: NayZ
      * Aide: https://gist.github.com/sterlingwes/4199115
      */
-    const teams = await TeamModel.find({ tournament: tournamentId }).populate("tournament");
+    const teams = await TeamModel.find({ tournament: { $eq: tournamentId } }).populate("tournament");
     const teamsSize = teams.length;
-
-    const matches = [];
 
     const knownBrackets = [2, 4, 8, 16, 32, 64];
 
-    const closest = knownBrackets.find(b => b >= teamsSize);
-    const roundNumber = knownBrackets.indexOf(closest) + 1;
-    const byes = closest - teamsSize;
+    const bracketSize = knownBrackets.find(b => b >= teamsSize);
 
-    var refCount = 1;
-    var nextRefCount = refCount + (closest / 2);
+    var ref = 0;
+    var round = 0;
+    var nextRef = 0;
+    while (round < (knownBrackets.indexOf(bracketSize) + 1)) {
+        const matchNumber = (bracketSize / (2 ** (round + 1)));
+        nextRef = ref + matchNumber + 1;
+        var i = 0;
+        console.log("Round #" + (round + 1) + "\n");
+        while (i < matchNumber) {
+            console.log("    Match #" + (ref + 1) + " -> Match #" + Math.floor(nextRef) + "\n");
+            await MatchModel.create({
+                current: ref + 1,
+                next: (round + 1) == (knownBrackets.indexOf(bracketSize) + 1) ? null : Math.floor(nextRef),
+                round: round + 1,
+                tournament: tournamentId,
+                teams: [],
+                scores: [],
+                winner: null,
+                loser: null
+            });
+            ref++;
+            i++;
+            nextRef += 0.5;
+        }
+        round++;
+    }
+
+    const matches = await MatchModel.find({ tournament: { $eq: tournamentId } }).populate("teams tournament");
 
     // Créer les matchs initiaux
-    var i1 = 0;
-    while (i1 < teams.length) {
-        if (i1 + 4 <= teams.length) {
-            console.log("4 players = 2 matches");
-            matches.push({ ref: refCount, team1: teams[i1].name, team2: teams[i1 + 1].name, round: 1, next: nextRefCount });
-            matches.push({ ref: refCount + 1, team1: teams[i1 + 2].name, team2: teams[i1 + 3].name, round: 1, next: nextRefCount });
-            nextRefCount++;
-            refCount += 2;
-            i1 += 4;
-        } else {
-            if (i1 + 3 <= teams.length) {
-                console.log("3 players = 1 matches & 1 next round match");
-                //2 equipes en match + 1 équipes qualifié
-                matches.push({ ref: refCount, team1: teams[i1].name, team2: teams[i1 + 1].name, round: 1, next: nextRefCount });
-                matches.push({ ref: (refCount + (closest / 2) - 1), team1: teams[i1 + 2].name, team2: null, round: 2, next: nextRefCount + (closest / 2) });
-                nextRefCount++;
-                refCount += 1;
-                i1 += 3;
-            } else {
-                if (i1 + 2 <= teams.length) {
-                    console.log("2 players = 1 next round match");
-                    //2 équipes qualifié
-                    matches.push({ ref: (refCount + (closest / 2) - 1), team1: teams[i1].name, team2: teams[i1 + 1].name, round: 2, next: nextRefCount + (closest / 2) });
-                    nextRefCount++;
-                    refCount += 0;
-                    i1 += 2;
-                }
-            }
-        }
-
-        
-    }
-
-    console.log("Round 1\n");
-
-    matches.filter(m => m.round == 1).forEach(m => console.log("       " + m.team1 + " VS " + m.team2 + "\n"));
-
-    console.log("Round 2\n");
-
-    matches.filter(m => m.round == 2).forEach(m => console.log("       " + m.team1 + " VS " + m.team2 + "\n"));
-
-    var n = 0;
-    console.log(roundNumber);
-    while (n < roundNumber) {
-        console.log(matches.length);
-        
-        for (const match of matches) {
-            const { ref, next, round } = match;
-    
-            if (matches.find(m => m.ref == next)) break;
-    
-            matches.push({ ref: next, round: round + 1, team1: null, team2: null, next: (next + (closest / 2) - 1) });
-        }
-
-        n++;
-    }
-
     return res.status(200).json(matches);
 }
 

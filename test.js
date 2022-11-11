@@ -30,10 +30,12 @@ const main = (base) => {
 
         var last = brackets.filter(b => b.nextGame == i).map(b => ({ game: b.bracketNo, teams: b.teamnames }));
 
+        if (round != 1) break;
+
         brackets.push({
             lastGames: round == 1 ? null : [last[0].game, last[1].game],
             nextGame: nextInc + i > base - 1 ? null : nextInc + i,
-            teamnames: round == 1 ? [exampleTeams[teamMark], exampleTeams[teamMark + 1]] : [last[0].teams[Math.random()], last[1].teams[Math.random()]],
+            teamnames: round == 1 ? [exampleTeams[teamMark], exampleTeams[teamMark + 1]] : ["round+1", "round+1"],
             bracketNo: i,
             roundNo: round,
             bye: isBye
@@ -47,9 +49,9 @@ const main = (base) => {
             baseT = baseT + baseC;
             baseR = i / baseT;
         }
-
-        console.log(brackets);
     }
+
+    console.log(JSON.stringify(brackets));
 }
 
 main(PLAYERS);
