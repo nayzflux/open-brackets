@@ -41,6 +41,32 @@ const login = async (email, password) => {
     return response;
 }
 
+const deleteTeam = async (tournamentId, teamId) => {
+    const response = await (await fetch("http://localhost:8080/api/v1/tournaments/" + tournamentId + "/teams/" + teamId, {
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        method: "DELETE",
+        credentials: 'include'
+    })).json();
+
+    return response;
+}
+
+const generateTree = async (tournamentId) => {
+    const response = await (await fetch("http://localhost:8080/api/v1/tournaments/" + tournamentId + "/matches/generate-tree", {
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        method: "POST",
+        credentials: 'include'
+    })).json();
+
+    return response;
+}
+
 const main = async () => {
     // Chargé le nom du tournoi
     const tournament = await fetchTournament(TOURNOI);
@@ -70,20 +96,44 @@ const main = async () => {
     }
 
     const tName = document.createElement("span");
+    const treeButton = document.createElement("button");
+    treeButton.innerHTML = "Générer les matchs"
+    treeButton.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        await generateTree(TOURNOI);
+
+        document.querySelector("#root").innerHTML = "";
+
+        main();
+    });
     tName.textContent = "Nom du tournoi: " + tournament.name;
     document.querySelector("#root").appendChild(tName);
+    document.querySelector("#root").appendChild(treeButton);
 
     // Chargé les équipes
     const teams = await fetchTeams(TOURNOI);
     for (const team of teams) {
         const teamO = document.createElement("div");
         teamO.className = "team";
+        const deleteButton = document.createElement("button");
+        deleteButton.innerHTML = "Supprimer";
+        deleteButton.value = team._id;
+        deleteButton.className = "delete-team-button";
+        deleteButton.addEventListener("click", async (e) => {
+            e.preventDefault();
+
+            const teamId = e.currentTarget.value;
+
+            deleteTeam(TOURNOI, teamId);
+        });
         const name = document.createElement("span");
         const players = document.createElement("div");
         const player1 = document.createElement("span");
         const player2 = document.createElement("span");
         teamO.appendChild(name);
         teamO.appendChild(players);
+        teamO.appendChild(deleteButton);
         players.appendChild(player1);
         players.appendChild(player2);
 

@@ -15,14 +15,13 @@ const tournamentRouter = require("./routers/tournamentRouter");
 const teamRouter = require("./routers/teamRouter");
 const authRouter = require("./routers/authRouter");
 
-const teamController = require("./controllers/teamController");
 const matchController = require("./controllers/matchController");
 
 /**
  * Parsing
  */
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: "10mb" }));
 app.use(cookieParser());
 
 /**
@@ -75,24 +74,5 @@ app.post("/api/v1/tournaments/:tournamentId/matches/generate-tree", matchControl
  * Supprimer les matches
  */
 app.delete("/api/v1/tournaments/:tournamentId/matches", matchController.deleteAll);
-
-/**
- * AUTH ROUTES
- */
-
-/**
- * USER ROUTES
- */
-
-// // ALL ROUTES
-// app.get("/api/v1/users");
-// app.get("/api/v1/users/:userId");
-// app.put("/api/v1/users/:userId");
-// app.delete("/api/v1/users/:userId");
-
-// // PERSONAL USER
-// app.get("/api/v1/users/me");
-// app.put("/api/v1/users/me");
-// app.delete("/api/v1/users/me");
 
 app.listen(8080, () => console.log("Server started on port : 8080"));

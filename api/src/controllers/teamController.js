@@ -17,13 +17,15 @@ module.exports.create = async (req, res) => {
  * Supprimer une équipe
  */
 module.exports.delete = async (req, res) => {
-    const { teamId } = req.body;
+    const { teamId } = req.params;
+
+    console.log(teamId);
 
     if (!mongoose.Types.ObjectId.isValid(teamId)) return res.status(400).json({ message: "L'ID de l'équipe est invalide" });
-    const team = await TournamentModel.findById(teamId);
+    const team = await TeamModel.findById(teamId);
     if (!team) return res.status(404).json({ message: "L'équipe n'existe pas" });
 
-    await team.remove();
+    await team.delete();
     return res.status(200).json(team);
 }
 
@@ -31,10 +33,10 @@ module.exports.delete = async (req, res) => {
  * Récupérer une équipe
  */
 module.exports.get = async (req, res) => {
-    const { teamId } = req.body;
+    const { teamId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(teamId)) return res.status(400).json({ message: "L'ID de l'équipe est invalide" });
-    const team = await TournamentModel.findById(teamId);
+    const team = await TeamModel.findById(teamId);
     if (!team) return res.status(404).json({ message: "L'équipe n'existe pas" });
 
     return res.status(200).json(team);
