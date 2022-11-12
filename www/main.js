@@ -3,6 +3,7 @@ const TOURNOI = "636a8c9421b6b38c9f47fd7c"
 const fetchTournament = async (id) => {
     const response = await (await fetch("http://localhost:8080/api/v1/tournaments/" + id, {
         method: "GET",
+        credentials: "include"
     })).json();
 
     return response;
@@ -10,7 +11,8 @@ const fetchTournament = async (id) => {
 
 const fetchTeams = async (id) => {
     const response = await (await fetch("http://localhost:8080/api/v1/tournaments/" + id + "/teams", {
-        method: "GET"
+        method: "GET",
+        credentials: "include"
     })).json();
 
     return response;
@@ -18,7 +20,22 @@ const fetchTeams = async (id) => {
 
 const fetchMatches = async (id) => {
     const response = await (await fetch("http://localhost:8080/api/v1/tournaments/" + id + "/matches", {
-        method: "GET"
+        method: "GET",
+        credentials: "include"
+    })).json();
+
+    return response;
+}
+
+const login = async (email, password) => {
+    const response = await (await fetch("http://localhost:8080/api/v1/auth/login", {
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        method: "POST",
+        credentials: 'include',
+        body: JSON.stringify({ email, password })
     })).json();
 
     return response;
@@ -27,6 +44,31 @@ const fetchMatches = async (id) => {
 const main = async () => {
     // Chargé le nom du tournoi
     const tournament = await fetchTournament(TOURNOI);
+
+    if (!tournament?.name) {
+        // Pas connecté alors affiché page de connexion
+        console.log("pas login");
+        document.querySelector("#root").innerHTML = '<div class="login-form-container"><form><input class="login-form-field" id="email" type="email" placeholder="Votre adresse e-mail"></input><input class="login-form-field" type="password" id="password" placeholder="Votre mot de passe"></input><button id="submit" class="login-form-submit">SE CONNECTER</button><span id="error"></span></form></div>';
+        document.querySelector("#submit").addEventListener("click", async (e) => {
+            e.preventDefault();
+
+            const email = document.querySelector("#email").value;
+            const password = document.querySelector("#password").value;
+
+            const response = await login(email, password);
+
+            if (!response?.logged) {
+                document.querySelector("#error").innerHTML = response.message;
+                return;
+            }
+
+            document.querySelector(".login-form-container").remove();
+
+            main();
+        });
+        return;
+    }
+
     const tName = document.createElement("span");
     tName.textContent = "Nom du tournoi: " + tournament.name;
     document.querySelector("#root").appendChild(tName);
@@ -44,11 +86,11 @@ const main = async () => {
         teamO.appendChild(players);
         players.appendChild(player1);
         players.appendChild(player2);
-    
+
         name.textContent = team.name;
         player1.textContent = team.players[0];
         player2.textContent = team.players[1];
-    
+
         document.querySelector("#root").appendChild(teamO);
     }
 
@@ -65,7 +107,7 @@ const main = async () => {
 
         var i = 0;
         while (i < roundNumber) {
-            const roundMatches = matches.filter(m => m.round === i+1);
+            const roundMatches = matches.filter(m => m.round === i + 1);
 
             console.log(roundMatches);
 
@@ -105,7 +147,7 @@ const main = async () => {
                 matchContainer.appendChild(team2Container);
 
                 matchRef.innerText = match.current + " -> " + match.next;
-    
+
                 if (match.teams.length == 2) {
                     team1Name.innerText = match.teams[0].name;
                     team2Name.innerText = match.teams[1].name;

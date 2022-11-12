@@ -12,6 +12,7 @@ const MongoStore = require(`connect-mongo`);
 const app = express();
 
 const tournamentRouter = require("./routers/tournamentRouter");
+const teamRouter = require("./routers/teamRouter");
 const authRouter = require("./routers/authRouter");
 
 const teamController = require("./controllers/teamController");
@@ -28,8 +29,9 @@ app.use(cookieParser());
  * Cors
  */
 app.use(cors({
-    origin: '*',
-    optionsSuccessStatus: 200
+    origin: ['http://localhost', 'http://localhost:80'],
+    credentials: true,
+    preflightContinue: false
 }));
 
 /**
@@ -38,7 +40,7 @@ app.use(cors({
 app.use(session(
     {
         secret: process.env.SESSION_SECRET,
-        cookie: { maxAge: 30 * 24 * 60 * 60 * 1000, expires: 30 * 24 * 60 * 60 * 1000, httpOnly: true, secure: false },
+        cookie: { maxAge: 30 * 24 * 60 * 60 * 1000, expires: 30 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: true, secure: false },
         saveUninitialized: false,
         resave: false,
         store: MongoStore.create({ mongoUrl: process.env.MONGO_URI })
@@ -49,17 +51,10 @@ app.use(session(
  * ======================================== ROUTERS ========================================
  */
 
+app.use("/api/v1/auth", authRouter);
+
 app.use("/api/v1/tournaments", tournamentRouter);
-
-/**
- * Créer une équipe
- */
-app.post("/api/v1/tournaments/:tournamentId/teams", teamController.create);
-
-/**
- * Récuperer les équipes
- */
-app.get("/api/v1/tournaments/:tournamentId/teams", teamController.getAll);
+app.use("/api/v1/tournaments", teamRouter);
 
 /**
  * Créer un match
@@ -84,7 +79,6 @@ app.delete("/api/v1/tournaments/:tournamentId/matches", matchController.deleteAl
 /**
  * AUTH ROUTES
  */
-app.use("/api/v1/auth", authRouter);
 
 /**
  * USER ROUTES

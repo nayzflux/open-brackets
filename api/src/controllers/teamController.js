@@ -6,29 +6,46 @@ const TournamentModel = require("../models/tournamentModel");
  * Créer une équipe
  */
 module.exports.create = async (req, res) => {
-    const { tournamentId } = req.params;
+    const { tournament } = req;
     const { name, players } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(tournamentId)) return res.status(400).json({ message: "Merci de préciser un ID valide" });
-
-    const tournament = await TournamentModel.findById(tournamentId);
-
-    if (!tournament) return res.status(404).json({ message: "Le tournoi n'existe pas" });
-
-    const team = await (await TeamModel.create({name, players, tournament: tournament.id})).populate("tournament");
+    const team = await (await TeamModel.create({ name, players, tournament: tournament._id })).populate("tournament");
     return res.status(201).json(team);
+}
+
+/**
+ * Supprimer une équipe
+ */
+module.exports.delete = async (req, res) => {
+    const { teamId } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(teamId)) return res.status(400).json({ message: "L'ID de l'équipe est invalide" });
+    const team = await TournamentModel.findById(teamId);
+    if (!team) return res.status(404).json({ message: "L'équipe n'existe pas" });
+
+    await team.remove();
+    return res.status(200).json(team);
+}
+
+/**
+ * Récupérer une équipe
+ */
+module.exports.get = async (req, res) => {
+    const { teamId } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(teamId)) return res.status(400).json({ message: "L'ID de l'équipe est invalide" });
+    const team = await TournamentModel.findById(teamId);
+    if (!team) return res.status(404).json({ message: "L'équipe n'existe pas" });
+
+    return res.status(200).json(team);
 }
 
 /**
  * Récupérer les équipes
  */
- module.exports.getAll = async (req, res) => {
-    const { tournamentId } = req.params;
+module.exports.getAll = async (req, res) => {
+    const { tournament } = req;
 
-    if (!mongoose.Types.ObjectId.isValid(tournamentId)) return res.status(400).json({ message: "Merci de préciser un ID valide" });
-    const tournament = await TournamentModel.findById(tournamentId);
-    if (!tournament) return res.status(404).json({ message: "Le tournoi n'existe pas" });
-
-    const teams = await TeamModel.find({ tournament: tournament.id}).populate("tournament");
-    return res.status(201).json(teams);
+    const teams = await TeamModel.find({ tournament: tournament._id }).populate("tournament");
+    return res.status(200).json(teams);
 }
